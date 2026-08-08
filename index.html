@@ -1296,20 +1296,19 @@ var STORAGE_KEY = 'pendingResults';
     }, 20);
   }
 
-  function buildResultPayload(lvl, fileName){
-    return {
-      name: state.name || '',
-      phone: state.phone || '',
-      levelCode: lvl.code,
-      levelName: lvl.name,
-      level: lvl.code + ' - ' + lvl.name,
-      ielts: lvl.ielts,
-      preferredFormat: state.studyFormat ? state.studyFormat.name : '',
-      writingSample: state.writing || '',
-      dateTime: new Date().toISOString(),
-      pdfFileName: fileName
-    };
-  }
+ function buildResultPayload(lvl){
+  return {
+    name: state.name || '',
+    phone: state.phone || '',
+    birthDate: state.birthDate || '',
+    levelCode: lvl.code,
+    levelName: lvl.name,
+    level: lvl.code + ' - ' + lvl.name,
+    ielts: lvl.ielts,
+    writingSample: state.writing || '',
+    dateTime: new Date().toISOString()
+  };
+}
 
   function buildTelegramCaption(payload){
     return [
