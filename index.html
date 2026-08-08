@@ -1614,7 +1614,7 @@ var STORAGE_KEY = 'pendingResults';
     }
 
     html += '<div class="trace">Sections tested: ' + traceText() + '</div>';
-    html += '<div id="sendStatus" class="send-status">📤 Sending results...</div>';
+    html += '<div id="sendStatus" class="send-status" style="display:none;"></div>';
     html += '<div class="row no-print"><button class="btn btn-ghost btn-shine" id="restartBtn">Start New Student</button></div>';
 
     animateCardTransition(html, function(){
