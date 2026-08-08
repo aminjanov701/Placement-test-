@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nurik's Academy — English FREE Placement Test</title>
+<title>Nurik's Academy — English Placement Test</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -214,11 +214,33 @@
     margin: 0 0 6px;
     color: var(--ink);
   }
+  h2.screen-title.welcome-title{
+    color: var(--garnet);
+  }
+  .welcome-accent{
+    width: 46px;
+    height: 3px;
+    background: var(--gold-gradient);
+    border-radius: 2px;
+    margin: 0 0 20px;
+  }
   p.screen-lede{
     color: var(--ink-soft);
     margin: 0 0 22px;
     font-size: 15px;
     line-height:1.5;
+  }
+
+  .card-fade-exit{ opacity: 0; }
+  .card-fade{
+    opacity: 0;
+    transform: translateX(0);
+    transition: opacity .55s ease;
+    will-change: opacity;
+  }
+  .card-fade.card-panel-visible{
+    opacity: 1;
+    transform: translateX(0);
   }
 
   label.field-label{
@@ -752,11 +774,9 @@ text-align:center;
 <script>
 (function(){
 
-  var SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbymxB7MChyWhKoSYo0z6QqcdiH2ESayqs8U_IgL7jeZgI_NLu2ZAGlveLNKDS2qsHjiUw/exec';
-  var BOT_TOKEN = '8808165315:AAEB1Ny4OJI9SA2vH-JV0SfjrEp-uUbZ2JQ';
-  var CHAT_ID = '-1003827057990';
-  var TELEGRAM_API_URL = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendDocument';
-  var STORAGE_KEY = 'pendingResults';
+var SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbymxB7MChyWhKoSYo0z6QqcdiH2ESayqs8U_IgL7jeZgI_NLu2ZAGlveLNKDS2qsHjiUw/exec';
+var TELEGRAM_API_URL = '/.netlify/functions/placement-test';
+var STORAGE_KEY = 'pendingResults';
 
   var LEVELS = [
     { code:'A1', name:'Beginner',            desc:'Can understand and use familiar everyday expressions and very basic phrases, and can introduce themselves and ask simple questions.', ielts:'below 3.0', group:'Beginner (A1)' },
@@ -856,7 +876,6 @@ text-align:center;
   var state = {
     name: '',
     phone: '',
-    parentPhone: '',
     birthDate: '',
     startIndex: 0,
     currentIndex: 0,
@@ -966,32 +985,31 @@ text-align:center;
     ladderEl.innerHTML = html;
   }
 
-  function animateCardTransition(nextHtml, callback){
-    card.classList.remove('card-panel-visible');
-    card.classList.add('card-panel-exit');
+  function animateCardTransition(nextHtml, callback, fadeOnly){
+    card.classList.remove('card-panel-visible', 'card-fade');
+    card.classList.add(fadeOnly ? 'card-fade-exit' : 'card-panel-exit');
     window.setTimeout(function(){
       card.innerHTML = nextHtml;
-      card.classList.remove('card-panel-exit');
-      card.classList.add('card-panel', 'card-panel-visible');
+      card.classList.remove('card-panel-exit', 'card-fade-exit');
+      if (fadeOnly){
+        card.classList.add('card-fade', 'card-panel-visible');
+      } else {
+        card.classList.add('card-panel', 'card-panel-visible');
+      }
       if (callback) callback();
-    }, 250);
+    }, fadeOnly ? 450 : 250);
   }
 
   function renderWelcome(){
     renderLadder(-1);
     var html =
-      '<h2 class="screen-title">🚀 Test Your English in 5 Minutes</h2>' +
+      '<h2 class="screen-title welcome-title">🚀 Test Your English in 5 Minutes</h2>' +
+      '<div class="welcome-accent"></div>' +
       '<p class="screen-lede">Find out your English level for free and get a personalized recommendation from Nurik\'s Academy.</p>' +
-      '<div style="background:#fff;border:1px solid #E4DAC0;padding:16px;margin:20px 0;border-radius:6px;">🏆 700+ Bitiruvchilar<br>🎯 IELTS 8.0+ <br>📚 SAT 1400+ <br>👨‍🏫 Certified Teachers<br>🎁 Bepul konsultatsiya</div>' +
-      '<div style="text-align:center;font-weight:600;color:#8B6B14;margin-bottom:20px;">⏱ Average completion time: 5 minutes</div>' +
-      '<div style="background:#F7ECC6;padding:12px;border-radius:6px;margin-bottom:20px;">🔥 Siz B2 daraja yoki undan yuqori natijaga erisha olasizmi?</div>' +
-      '<p class="screen-lede">Ushbu qisqa moslashuvchan test sizning ingliz tili darajangizni aniqlaydi va sizni to\'g\'ri sinf guruhiga joylashtirishga yordam beradi. Bu taxminan 10–15 daqiqa vaqtingizni oladi.</p>' +
-      '<div style="background:#fff;border-left:4px solid #C9A227;padding:14px;margin-bottom:20px;">Natijangizni saqlash va sizga mos o‘quv tavsiyasini olish uchun ma’lumotlaringizni to‘ldiring.</div><div class="field-group"><label class="field-label" for="nameInput">FULL NAME</label>' +
+      '<div class="field-group" style="margin-top:24px;"><label class="field-label" for="nameInput">FULL NAME</label>' +
       '<input type="text" id="nameInput" placeholder="e.g. Aminjonov Nurmuhammad" autocomplete="off" lang="en" spellcheck="false"></div>' +
       '<div class="field-group"><label class="field-label" for="phoneInput">PHONE NUMBER</label>' +
       '<input type="tel" id="phoneInput" placeholder="(90) 848-87-87" autocomplete="off" inputmode="numeric" pattern="[0-9]*" maxlength="15"></div>' +
-      '<div class="field-group"><label class="field-label" for="parentPhoneInput">PARENT PHONE NUMBER</label>' +
-      '<input type="tel" id="parentPhoneInput" placeholder="(90) 848-87-87" autocomplete="off" inputmode="numeric" pattern="[0-9]*" maxlength="15"></div>' +
       '<div class="field-group"><label class="field-label" for="birthDateInput">DATE OF BIRTH</label>' +
       '<input type="date" id="birthDateInput"></div>' +
       '<div class="row end"><button class="btn btn-primary btn-shine" id="startBtn" disabled>Start Free Test</button></div>';
@@ -999,23 +1017,19 @@ text-align:center;
     animateCardTransition(html, function(){
         var nameInput = document.getElementById('nameInput');
       var phoneInput = document.getElementById('phoneInput');
-      var parentPhoneInput = document.getElementById('parentPhoneInput');
       var birthDateInput = document.getElementById('birthDateInput');
       var startBtn = document.getElementById('startBtn');
       restrictToEnglishName(nameInput);
       maskPhoneInput(phoneInput);
-      maskPhoneInput(parentPhoneInput);
 
       function updateStartButtonState(){
         var nameOk = nameInput.value.trim().length > 0;
         var phoneOk = isPhoneComplete(phoneInput.value);
-        var parentPhoneOk = isPhoneComplete(parentPhoneInput.value);
-        startBtn.disabled = !(nameOk && phoneOk && parentPhoneOk);
+        startBtn.disabled = !(nameOk && phoneOk);
       }
 
       nameInput.addEventListener('input', updateStartButtonState);
       phoneInput.addEventListener('input', updateStartButtonState);
-      parentPhoneInput.addEventListener('input', updateStartButtonState);
       nameInput.addEventListener('keydown', function(e){
         if (e.key === 'Enter' && !startBtn.disabled) beginTest();
       });
@@ -1024,14 +1038,13 @@ text-align:center;
       nameInput.focus();
 
       function beginTest(){
-        if (!(nameInput.value.trim().length > 0 && isPhoneComplete(phoneInput.value) && isPhoneComplete(parentPhoneInput.value))) return;
+        if (!(nameInput.value.trim().length > 0 && isPhoneComplete(phoneInput.value))) return;
         state.name = nameInput.value.trim();
         state.phone = phoneInput.value.trim();
-        state.parentPhone = parentPhoneInput.value.trim();
         state.birthDate = birthDateInput.value;
         renderSelfAssessment();
       }
-    });
+    }, true);
   }
 
   function renderSelfAssessment(){
@@ -1287,7 +1300,6 @@ text-align:center;
     return {
       name: state.name || '',
       phone: state.phone || '',
-      parentPhone: state.parentPhone || '',
       levelCode: lvl.code,
       levelName: lvl.name,
       level: lvl.code + ' - ' + lvl.name,
@@ -1305,7 +1317,6 @@ text-align:center;
       '',
       '👤 Student: ' + (payload.name || '—'),
       '📱 Student Phone: ' + (payload.phone || '—'),
-      '👨‍👩‍👧 Parent Phone: ' + (payload.parentPhone || '—'),
       '',
       '📊 Level: ' + (payload.level || '—'),
       '🎯 IELTS Equivalent: ' + (payload.ielts || '—'),
@@ -1327,7 +1338,6 @@ text-align:center;
       '<div class="result-item"><span class="k">STUDENT</span><span class="v">' + safeValue(payload.name) + '</span></div>' +
       '<div class="result-item"><span class="k">DATE</span><span class="v">' + safeValue(payload.dateTime ? new Date(payload.dateTime).toLocaleString() : '') + '</span></div>' +
       '<div class="result-item"><span class="k">STUDENT PHONE</span><span class="v">' + safeValue(payload.phone) + '</span></div>' +
-      '<div class="result-item"><span class="k">PARENT PHONE</span><span class="v">' + safeValue(payload.parentPhone) + '</span></div>' +
       '<div class="result-item"><span class="k">LEVEL</span><span class="v">' + safeValue(payload.level) + '</span></div>' +
       '<div class="result-item"><span class="k">IELTS EQUIVALENT</span><span class="v">' + safeValue(payload.ielts) + '</span></div>' +
       '<div class="result-item"><span class="k">PREFERRED FORMAT</span><span class="v">' + safeValue(payload.preferredFormat) + '</span></div>' +
@@ -1386,7 +1396,7 @@ text-align:center;
     var payload = buildResultPayload(lvl, fileName);
     var pending = getPendingResults();
     var existing = pending.find(function(item){
-      return item && item.data && item.data.name === payload.name && item.data.phone === payload.phone && item.data.parentPhone === payload.parentPhone && item.data.level === payload.level && item.data.preferredFormat === payload.preferredFormat && item.telegramSent !== true && item.sheetsSent !== true;
+      return item && item.data && item.data.name === payload.name && item.data.phone === payload.phone && item.data.level === payload.level && item.data.preferredFormat === payload.preferredFormat && item.telegramSent !== true && item.sheetsSent !== true;
     });
     if (existing){
       return existing;
@@ -1411,33 +1421,14 @@ text-align:center;
       savePendingResults(filtered);
       return true;
     }
-    return false;
+    return false; 
   }
 
-  function uploadPdfBlob(pdfBlob, payload, fileName){
-    var formData = new FormData();
-    formData.append('chat_id', CHAT_ID);
-    formData.append('caption', buildTelegramCaption(payload));
-    formData.append('document', pdfBlob, fileName || sanitizeFileName(payload.name));
-
-    return fetch(TELEGRAM_API_URL, {
-      method: 'POST',
-      body: formData
-    }).then(function(response){
-      if (!response.ok){
-        return response.json().then(function(data){
-          throw new Error(data.description || 'Telegram upload failed');
-        });
-      }
-      return response.json();
-    });
-  }
-
+ 
   function submitToSheets(payload){
     var fields = {
       name: payload.name || '',
       phone: payload.phone || '',
-      parentPhone: payload.parentPhone || '',
       birthDate: payload.birthDate || '',
       level: payload.level || '',
       studyFormat: payload.preferredFormat || '',
@@ -1459,20 +1450,35 @@ text-align:center;
     if (!payload){
       return Promise.reject(new Error('No payload found for pending result.'));
     }
-
-    var fileName = payload.pdfFileName || sanitizeFileName(payload.name);
+ 
     var runTelegram = function(){
-      return generatePdfFromPayload(payload).then(function(pdfBlob){
-        return uploadPdfBlob(pdfBlob, payload, fileName);
-      }).then(function(result){
-        console.log('Telegram upload successful', result);
-        entry.telegramSent = true;
-        if (!saveEntry(entry)){
-          console.warn('Could not update pending result after Telegram success.');
-        }
-        return true;
-      });
-    };
+  return fetch(TELEGRAM_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  }).then(function(response){
+    return response.json().then(function(result){
+
+      if (!response.ok || !result.success){
+        throw new Error(
+          result.error || 'Telegram request failed'
+        );
+      }
+
+      console.log('Telegram message sent successfully', result);
+
+      entry.telegramSent = true;
+
+      if (!saveEntry(entry)){
+        console.warn('Could not update pending result after Telegram success.');
+      }
+
+      return true;
+    });
+  });
+};
 
     var runSheets = function(){
       return submitToSheets(payload).then(function(){
@@ -1596,7 +1602,6 @@ text-align:center;
         '<div class="result-item"><span class="k">STUDENT</span><span class="v">' + (state.name || '—') + '</span></div>' +
         '<div class="result-item"><span class="k">DATE</span><span class="v">' + today + '</span></div>' +
         '<div class="result-item"><span class="k">STUDENT PHONE</span><span class="v">' + (state.phone || '—') + '</span></div>' +
-        '<div class="result-item"><span class="k">PARENT PHONE</span><span class="v">' + (state.parentPhone || '—') + '</span></div>' +
         '<div class="result-item"><span class="k">BIRTH DATE</span><span class="v">' + (state.birthDate || '—') + '</span></div>' +
         '<div class="result-item"><span class="k">LEVEL</span><span class="v">' + lvl.code + ' &middot; ' + lvl.name + '</span></div>' +
         '<div class="result-item"><span class="k">RECOMMENDED GROUP</span><span class="v">' + lvl.group + '</span></div>' +
