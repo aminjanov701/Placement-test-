@@ -9,16 +9,17 @@ exports.handler = async function (event) {
   }
 
   try {
-    const payload = JSON.parse(event.body);
+    const payload = JSON.parse(event.body || "{}");
 
     const {
       name,
       phone,
       birthDate,
-      cefr,
+      levelCode,
+      levelName,
+      level,
       ielts,
-      writing,
-      format
+      writingSample
     } = payload;
 
     if (!name || !phone) {
@@ -30,17 +31,21 @@ exports.handler = async function (event) {
       };
     }
 
+    const cefrLevel =
+      level ||
+      (levelCode && levelName
+        ? `${levelCode} - ${levelName}`
+        : levelCode || levelName || "—");
+
     const text = `📊 PLACEMENT TEST RESULT
 
 👤 Name: ${name}
 📞 Phone: ${phone}
 🎂 Birth date: ${birthDate || "—"}
 
-📈 CEFR: ${cefr || "—"}
+📈 CEFR Level: ${cefrLevel}
 🎯 IELTS Equivalent: ${ielts || "—"}
-✍️ Writing: ${writing || "—"}
-
-📚 Format: ${format || "—"}`;
+✍️ Writing: ${writingSample || "—"}`;
 
     const telegramResponse = await fetch(
       `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
@@ -64,7 +69,8 @@ exports.handler = async function (event) {
       return {
         statusCode: 500,
         body: JSON.stringify({
-          error: "Telegram error"
+          error: "Telegram error",
+          details: telegramResult
         })
       };
     }
