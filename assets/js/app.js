@@ -833,7 +833,10 @@ var STORAGE_KEY = 'pendingResults';
         '<div class="result-item"><span class="k">APPROX. IELTS BAND</span><span class="v">' + lvl.ielts + '</span></div>' +
         '<div class="result-item"><span class="k">CLASS FORMAT</span><span class="v">' + (state.studyFormat ? state.studyFormat.name : '—') + '</span></div>' +
       '</div>' +
-      '<p class="screen-lede">' + lvl.desc + '</p>' + '<div style="background:#F7ECC6;padding:16px;border-radius:6px;margin-top:20px;">🎁 Bonus: Show this result to a Nurik\'s Academy administrator and get a free consultation.</div>' + '<div style="margin-top:20px;text-align:center;"><a href="https://t.me/Nuriksacademy" target="_blank" class="btn btn-primary">📲 Get Free Consultation</a></div>';
+      '<p class="screen-lede">' + lvl.desc + '</p>' +
+'<div style="margin-top:20px;text-align:center;">' +
+'<a href="https://t.me/Nuriksacademy" target="_blank" class="btn btn-primary">📲 Get Free Consultation</a>' +
+'</div>';
 
     if (state.writing){
       html += '<label class="field-label">WRITING SAMPLE (for teacher review)</label><div class="writing-echo">' + escapeHtml(state.writing) + '</div>';
